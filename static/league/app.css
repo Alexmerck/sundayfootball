@@ -246,6 +246,50 @@ label { display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; col
 .result-loss { color: #9b2c2c; }
 .result-draw { color: var(--muted); }
 
+.balance-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 24px;
+  margin: 20px 0 28px;
+  text-align: center;
+}
+.balance-summary div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.balance-summary strong {
+  font-family: "IBM Plex Serif", serif;
+  font-size: 1.4rem;
+}
+.balance-summary span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.balance-summary .vs {
+  font-size: 1.2rem;
+  color: var(--pitch);
+  font-weight: 600;
+}
+.rating {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
 @media (max-width: 720px) {
   .grid, .meta { grid-template-columns: 1fr; }
   .top { flex-direction: column; }

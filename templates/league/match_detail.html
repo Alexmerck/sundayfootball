@@ -15,6 +15,12 @@
 </div>
 {% if match.notes %}<p class="lede">{{ match.notes }}</p>{% endif %}
 
+{% if user.is_staff and match.is_announced and match.unassigned %}
+  <p class="lede">
+    <a class="btn" href="{% url 'match-balance' match.pk %}">⚖️ Распределить по силе</a>
+  </p>
+{% endif %}
+
 <div class="grid">
   {% include "league/_roster.html" with title=match.team_a_name appearances=match.team_a %}
   {% include "league/_roster.html" with title=match.team_b_name appearances=match.team_b %}

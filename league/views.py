@@ -6,6 +6,7 @@ from django.views.decorators.http import require_http_methods
 
 from .forms import MatchMetaForm, player_line_forms
 from .models import Appearance, Match, Player
+from .services import balance_appearances
 
 
 def _leaderboard():
@@ -145,4 +146,41 @@ def match_create(request):
         request,
         "league/match_form.html",
         {"meta": meta, "lines": lines, "error": error},
+    )
+
+
+@staff_member_required
+@require_http_methods(["GET", "POST"])
+def match_balance(request, pk):
+    match = get_object_or_404(
+        Match.objects.prefetch_related("appearances__player"), pk=pk
+    )
+
+    if not match.is_announced:
+        return redirect(match)
+
+    squad = match.appearances.filter(side=Appearance.SIDE_SQUAD).select_related(
+        "player"
+    )
+    if not squad.exists():
+        return render(
+            request,
+            "league/match_balance.html",
+            {"match": match, "error": "В заявке пока никого нет."},
+        )
+
+    balanced = balance_appearances(squad)
+
+    if request.method == "POST":
+        team_a_ids = {app.pk for app, _ in balanced["team_a"]}
+        team_b_ids = {app.pk for app, _ in balanced["team_b"]}
+
+        Appearance.objects.filter(pk__in=team_a_ids).update(side=Appearance.SIDE_A)
+        Appearance.objects.filter(pk__in=team_b_ids).update(side=Appearance.SIDE_B)
+        return redirect(match)
+
+    return render(
+        request,
+        "league/match_balance.html",
+        {"match": match, "balanced": balanced},
     )

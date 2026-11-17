@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Распределение команд · {{ match.played_on|date:"d.m.Y" }}{% endblock %}
+{% block content %}
+<p class="eyebrow">{{ match.played_on|date:"l, j E Y" }} · {{ match.starts_at|time:"H:i" }}</p>
+<h1>Распределить составы</h1>
+
+{% if error %}
+  <p class="lede error">{{ error }}</p>
+  <p><a href="{{ match.get_absolute_url }}">← Назад к матчу</a></p>
+{% else %}
+  <p class="lede">Алгоритм распределяет игроков по рейтингу, чтобы команды были максимально равными.</p>
+
+  <div class="balance-summary">
+    <div>
+      <strong>{{ match.team_a_name }}</strong>
+      <span>рейтинг {{ balanced.team_a_rating }}</span>
+    </div>
+    <div class="vs">vs</div>
+    <div>
+      <strong>{{ match.team_b_name }}</strong>
+      <span>рейтинг {{ balanced.team_b_rating }}</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section>
+      <h2>{{ match.team_a_name }}</h2>
+      <ul class="roster">
+        {% for app, rating in balanced.team_a %}
+          <li>
+            <a class="person" href="{{ app.player.get_absolute_url }}">
+              {% include "league/_avatar.html" with player=app.player size="sm" %}
+              {{ app.player.name }}
+            </a>
+            <span class="rating">{{ rating|floatformat:1 }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+    <section>
+      <h2>{{ match.team_b_name }}</h2>
+      <ul class="roster">
+        {% for app, rating in balanced.team_b %}
+          <li>
+            <a class="person" href="{{ app.player.get_absolute_url }}">
+              {% include "league/_avatar.html" with player=app.player size="sm" %}
+              {{ app.player.name }}
+            </a>
+            <span class="rating">{{ rating|floatformat:1 }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+
+  <form method="post" action="{% url 'match-balance' match.pk %}">
+    {% csrf_token %}
+    <button type="submit" class="btn">Применить распределение</button>
+    <a class="btn btn-secondary" href="{{ match.get_absolute_url }}">Отмена</a>
+  </form>
+{% endif %}
+{% endblock %}
