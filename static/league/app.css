@@ -58,7 +58,7 @@ h2 { font-size: 1rem; margin: 0 0 12px; }
 .lede, footer { color: var(--muted); }
 .lede { max-width: 46rem; }
 footer { margin-top: 48px; font-size: 0.85rem; }
-.scoreboard, .score-row.static {
+.scoreboard {
   display: block;
   background: var(--pitch);
   color: #f6f3ea;
@@ -67,12 +67,27 @@ footer { margin-top: 48px; font-size: 0.85rem; }
   border-radius: 18px;
   margin: 24px 0 36px;
 }
+.score-row.static {
+  background: var(--pitch);
+  color: #f6f3ea;
+  padding: 22px 24px;
+  border-radius: 18px;
+  margin: 24px 0 36px;
+}
 .scoreboard .eyebrow { color: var(--accent); margin-top: 0; }
 .score-row {
   display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+.score-row > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+  white-space: nowrap;
 }
 .score-row strong {
   font-family: "IBM Plex Serif", serif;
@@ -80,9 +95,15 @@ footer { margin-top: 48px; font-size: 0.85rem; }
   line-height: 0.9;
   display: block;
 }
-.score-row .team { font-size: 0.95rem; opacity: 0.85; }
-.score-row .right { text-align: right; }
-.dash { font-size: 2rem; opacity: 0.5; padding-bottom: 8px; }
+.score-row .team {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  max-width: 34vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.score-row .right { align-items: center; }
+.dash { font-size: 2rem; opacity: 0.5; flex: 0 0 auto; }
 .note { margin: 12px 0 0; color: var(--accent); }
 .grid {
   display: grid;
