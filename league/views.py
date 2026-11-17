@@ -10,7 +10,7 @@ from .models import Appearance, Match, Player
 
 def _leaderboard():
     played = Q(appearances__match__status=Match.STATUS_PLAYED)
-    return (
+    players = (
         Player.objects.annotate(
             games=Count("appearances", filter=played),
             goals=Sum("appearances__goals", filter=played),
@@ -20,6 +20,21 @@ def _leaderboard():
         .filter(games__gt=0)
         .order_by("-goals", "-assists", "-saves", "name")
     )
+
+    # Победы считаем по фактическому счёту матча
+    win_counts = {}
+    apps = Appearance.objects.filter(
+        match__status=Match.STATUS_PLAYED,
+        side__in=(Appearance.SIDE_A, Appearance.SIDE_B),
+    ).select_related("match")
+    for app in apps:
+        if app.did_win() is True:
+            win_counts[app.player_id] = win_counts.get(app.player_id, 0) + 1
+
+    for player in players:
+        player.wins = win_counts.get(player.pk, 0)
+        player.win_rate = round((player.wins / player.games) * 100) if player.games else 0
+    return players
 
 
 def home(request):

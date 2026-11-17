@@ -16,6 +16,8 @@
       <a class="mark" href="{% url 'home' %}">Sunday League</a>
       <nav>
         <a href="{% url 'standings' %}">Таблица</a>
+        <a href="{% url 'match-list' %}">Игры</a>
+        <a href="{% url 'rules' %}">Правила</a>
         {% if user.is_staff %}
           <a href="{% url 'match-create' %}">Добавить матч</a>
         {% endif %}
@@ -26,7 +28,7 @@
       {% block content %}{% endblock %}
     </main>
     <footer>
-      Воскресный футбол · счёт по людям, не по клубам
+      Воскресный футбол · на Щипок 28
     </footer>
   </div>
 </body>

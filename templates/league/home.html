@@ -3,9 +3,19 @@
 {% block content %}
 <section class="intro">
   <p class="eyebrow">Воскресенье · свои</p>
-  <h1>Кто сколько забил, отдал и вытащил.</h1>
+  <h1>Кто сколько забил, отдал и вытащил</h1>
 
 </section>
+
+{% if next_match %}
+  <a class="scoreboard next-match" href="{{ next_match.get_absolute_url }}">
+    <p class="eyebrow">Следующая игра · {{ next_match.played_on|date:"j E" }} · {{ next_match.starts_at|time:"H:i" }}</p>
+    <h2 class="next-venue">{{ next_match.venue }}</h2>
+    {% if next_match.address %}<p class="note">{{ next_match.address }}</p>{% endif %}
+    {% if next_match.signup_note %}<p class="signup-note">{{ next_match.signup_note }}</p>{% endif %}
+    <p class="squad-count">В заявке: {{ next_match.squad_size }}</p>
+  </a>
+{% endif %}
 
 {% if latest %}
   <a class="scoreboard" href="{{ latest.get_absolute_url }}">

@@ -8,6 +8,7 @@
         <th>Г</th>
         <th>П</th>
         <th>С</th>
+        <th>В%</th>
       </tr>
     </thead>
     <tbody>
@@ -24,9 +25,10 @@
           <td>{{ row.goals|default:0 }}</td>
           <td>{{ row.assists|default:0 }}</td>
           <td>{{ row.saves|default:0 }}</td>
+          <td>{% if row.win_rate is not None %}{{ row.win_rate }}%{% else %}—{% endif %}</td>
         </tr>
       {% empty %}
-        <tr><td colspan="6">Пока никто не играл</td></tr>
+        <tr><td colspan="7">Пока никто не играл</td></tr>
       {% endfor %}
     </tbody>
   </table>

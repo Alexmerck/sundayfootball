@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import datetime, time
 
 from django.db import models
 from django.db.models import Count, Q, Sum
@@ -31,12 +31,22 @@ class Player(models.Model):
 
     def career_totals(self):
         played = Q(match__status=Match.STATUS_PLAYED)
-        return self.appearances.filter(played).aggregate(
+        totals = self.appearances.filter(played).aggregate(
             games=Count("id"),
             goals=Sum("goals"),
             assists=Sum("assists"),
             saves=Sum("saves"),
         )
+        games = totals["games"] or 0
+        totals["wins"] = sum(
+            1
+            for app in self.appearances.filter(
+                played, side__in=(Appearance.SIDE_A, Appearance.SIDE_B)
+            )
+            if app.did_win() is True
+        )
+        totals["win_rate"] = round((totals["wins"] / games) * 100) if games else None
+        return totals
 
 
 class Match(models.Model):
@@ -124,9 +134,12 @@ class Match(models.Model):
 
     @classmethod
     def next_upcoming(cls):
-        today = timezone.localdate()
+        now = timezone.localtime()
         return (
-            cls.objects.filter(played_on__gte=today)
+            cls.objects.filter(
+                models.Q(played_on__gt=now.date())
+                | models.Q(played_on=now.date(), starts_at__gte=now.time())
+            )
             .prefetch_related("appearances__player")
             .order_by("played_on", "starts_at", "id")
             .first()

@@ -14,6 +14,7 @@
   <li><b>{{ totals.goals|default:0 }}</b> голов</li>
   <li><b>{{ totals.assists|default:0 }}</b> пасов</li>
   <li><b>{{ totals.saves|default:0 }}</b> сейвов</li>
+  <li><b>{% if totals.win_rate is not None %}{{ totals.win_rate }}%{% else %}—{% endif %}</b> побед</li>
 </ul>
 
 <div class="table-wrap">
@@ -23,6 +24,7 @@
         <th>Дата</th>
         <th>Команда</th>
         <th>Счёт</th>
+        <th>Результат</th>
         <th>Г</th>
         <th>П</th>
         <th>С</th>
@@ -34,12 +36,19 @@
           <td><a href="{{ row.match.get_absolute_url }}">{{ row.match.played_on|date:"d.m.Y" }}</a></td>
           <td>{{ row.team_name }}</td>
           <td>{{ row.match.score_a }}:{{ row.match.score_b }}</td>
+          <td>
+            {% if row.match.is_played and row.side != 's' %}
+              {% if row.did_win is True %}<span class="result-win">победа</span>
+              {% elif row.did_win is False %}<span class="result-loss">поражение</span>
+              {% else %}<span class="result-draw">ничья</span>{% endif %}
+            {% else %}—{% endif %}
+          </td>
           <td>{{ row.goals }}</td>
           <td>{{ row.assists }}</td>
           <td>{{ row.saves }}</td>
         </tr>
       {% empty %}
-        <tr><td colspan="6">Ещё не выходил</td></tr>
+        <tr><td colspan="7">Ещё не выходил</td></tr>
       {% endfor %}
     </tbody>
   </table>
