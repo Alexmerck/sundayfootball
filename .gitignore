@@ -7,4 +7,5 @@ media/
 .DS_Store
 key
 key.pub
+.env
 
