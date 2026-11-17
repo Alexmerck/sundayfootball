@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Sunday League{% endblock %}
+{% block content %}
+<section class="intro">
+  <p class="eyebrow">Воскресенье · свои</p>
+  <h1>Кто сколько забил, отдал и вытащил — даже если команды каждый раз новые.</h1>
+  <p class="lede">Счёт матча складывается из голов игроков. Таблица живёт отдельно от цвета футболки.</p>
+</section>
+
+{% if latest %}
+  <a class="scoreboard" href="{{ latest.get_absolute_url }}">
+    <p class="eyebrow">Последняя игра · {{ latest.played_on|date:"j E" }}</p>
+    <div class="score-row">
+      <div>
+        <span class="team">{{ latest.team_a_name }}</span>
+        <strong>{{ latest.score_a }}</strong>
+      </div>
+      <span class="dash">:</span>
+      <div class="right">
+        <span class="team">{{ latest.team_b_name }}</span>
+        <strong>{{ latest.score_b }}</strong>
+      </div>
+    </div>
+    {% if latest.notes %}<p class="note">{{ latest.notes }}</p>{% endif %}
+  </a>
+{% else %}
+  <p>Пока пусто.{% if user.is_staff %} <a href="{% url 'match-create' %}">Занесите первое воскресенье.</a>{% endif %}</p>
+{% endif %}
+
+<div class="grid">
+  <section>
+    <div class="section-head">
+      <h2>Таблица</h2>
+      <a href="{% url 'standings' %}">вся</a>
+    </div>
+    {% include "league/_table.html" with table=table|slice:":8" %}
+  </section>
+  <section>
+    <div class="section-head">
+      <h2>Игры</h2>
+      {% if user.is_staff %}<a href="{% url 'match-create' %}">новая</a>{% endif %}
+    </div>
+    <ul class="match-list">
+      {% for match in matches %}
+        <li>
+          <a href="{{ match.get_absolute_url }}">
+            <span>{{ match.played_on|date:"d.m" }}</span>
+            <b>{{ match.team_a_name }} {{ match.score_a }} : {{ match.score_b }} {{ match.team_b_name }}</b>
+          </a>
+        </li>
+      {% empty %}
+        <li>Нет матчей</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

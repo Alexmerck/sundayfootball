@@ -1,0 +1,33 @@
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Игрок</th>
+        <th>И</th>
+        <th>Г</th>
+        <th>П</th>
+        <th>С</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in table %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>
+            <a class="person" href="{{ row.get_absolute_url }}">
+              {% include "league/_avatar.html" with player=row size="sm" %}
+              {{ row.name }}
+            </a>
+          </td>
+          <td>{{ row.games }}</td>
+          <td>{{ row.goals|default:0 }}</td>
+          <td>{{ row.assists|default:0 }}</td>
+          <td>{{ row.saves|default:0 }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6">Пока никто не играл</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

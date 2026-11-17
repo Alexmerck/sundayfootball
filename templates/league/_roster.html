@@ -1,0 +1,20 @@
+<section>
+  <h2>{{ title }}</h2>
+  <ul class="roster">
+    {% for row in appearances %}
+      <li>
+        <a class="person" href="{{ row.player.get_absolute_url }}">
+          {% include "league/_avatar.html" with player=row.player size="sm" %}
+          {{ row.player.name }}
+        </a>
+        <span class="pills">
+          {% if row.goals %}<i>{{ row.goals }} г</i>{% endif %}
+          {% if row.assists %}<i>{{ row.assists }} п</i>{% endif %}
+          {% if row.saves %}<i>{{ row.saves }} с</i>{% endif %}
+        </span>
+      </li>
+    {% empty %}
+      <li>Пусто</li>
+    {% endfor %}
+  </ul>
+</section>

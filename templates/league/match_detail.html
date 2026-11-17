@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ match.played_on|date:"d.m.Y" }} · Sunday League{% endblock %}
+{% block content %}
+<p class="eyebrow">{{ match.played_on|date:"l, j E Y" }}</p>
+<div class="score-row static">
+  <div>
+    <span class="team">{{ match.team_a_name }}</span>
+    <strong>{{ match.score_a }}</strong>
+  </div>
+  <span class="dash">:</span>
+  <div class="right">
+    <span class="team">{{ match.team_b_name }}</span>
+    <strong>{{ match.score_b }}</strong>
+  </div>
+</div>
+{% if match.notes %}<p class="lede">{{ match.notes }}</p>{% endif %}
+
+<div class="grid">
+  {% include "league/_roster.html" with title=match.team_a_name appearances=match.team_a %}
+  {% include "league/_roster.html" with title=match.team_b_name appearances=match.team_b %}
+</div>
+{% endblock %}

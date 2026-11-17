@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ player.name }} · Sunday League{% endblock %}
+{% block content %}
+<p class="eyebrow">Игрок</p>
+<div class="player-hero">
+  {% include "league/_avatar.html" with player=player size="lg" %}
+  <h1>{{ player.name }}</h1>
+</div>
+{% if user.is_staff %}
+  <p class="lede"><a href="{% url 'admin:league_player_change' player.pk %}">Изменить аватар в админке</a></p>
+{% endif %}
+<ul class="stat-strip">
+  <li><b>{{ totals.games|default:0 }}</b> игр</li>
+  <li><b>{{ totals.goals|default:0 }}</b> голов</li>
+  <li><b>{{ totals.assists|default:0 }}</b> пасов</li>
+  <li><b>{{ totals.saves|default:0 }}</b> сейвов</li>
+</ul>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Дата</th>
+        <th>Команда</th>
+        <th>Счёт</th>
+        <th>Г</th>
+        <th>П</th>
+        <th>С</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in appearances %}
+        <tr>
+          <td><a href="{{ row.match.get_absolute_url }}">{{ row.match.played_on|date:"d.m.Y" }}</a></td>
+          <td>{{ row.team_name }}</td>
+          <td>{{ row.match.score_a }}:{{ row.match.score_b }}</td>
+          <td>{{ row.goals }}</td>
+          <td>{{ row.assists }}</td>
+          <td>{{ row.saves }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6">Ещё не выходил</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

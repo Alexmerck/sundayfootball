@@ -1,0 +1,5 @@
+{% if player.avatar %}
+  <img class="avatar{% if size %} avatar-{{ size }}{% endif %}" src="{{ player.avatar.url }}" alt="{{ player.name }}">
+{% else %}
+  <span class="avatar avatar-fallback{% if size %} avatar-{{ size }}{% endif %}" aria-hidden="true">{{ player.initials }}</span>
+{% endif %}
