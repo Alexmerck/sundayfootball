@@ -197,43 +197,84 @@ def telegram_notify(request):
     if token != getattr(settings, "TELEGRAM_NOTIFY_TOKEN", None):
         return JsonResponse({"ok": False, "error": "unauthorized"}, status=403)
 
+    notify_type = (request.GET.get("type") or request.POST.get("type") or "all").lower()
+    if notify_type not in ("pregame", "postgame", "all"):
+        return JsonResponse(
+            {"ok": False, "error": "invalid type, expected pregame/postgame/all"},
+            status=400,
+        )
+
     now = timezone.localtime()
     sent_pregame, errors_pregame = 0, []
     sent_postgame, errors_postgame = 0, []
 
-    # Pregame
-    window_start = now + timedelta(hours=24)
-    for match in Match.objects.filter(
-        status=Match.STATUS_ANNOUNCED,
-        pregame_notification_sent=False,
-    ).prefetch_related("appearances__player"):
-        match_start = timezone.make_aware(
-            timezone.datetime.combine(match.played_on, match.starts_at)
-        )
-        if now <= match_start <= window_start:
-            try:
-                if send_pregame_notification(match):
-                    sent_pregame += 1
-            except Exception as exc:
-                errors_pregame.append(f"{match.pk}: {exc}")
+    if notify_type in ("pregame", "all"):
+        window_only = notify_type == "all"
+        sent, errors = _send_pregame(now, window_only=window_only)
+        sent_pregame += sent
+        errors_pregame.extend(errors)
 
-    # Postgame
-    for match in Match.objects.filter(
-        status=Match.STATUS_PLAYED,
-        postgame_notification_sent=False,
-    ).prefetch_related("appearances__player"):
-        try:
-            if send_postgame_notification(match):
-                sent_postgame += 1
-        except Exception as exc:
-            errors_postgame.append(f"{match.pk}: {exc}")
+    if notify_type in ("postgame", "all"):
+        sent, errors = _send_postgame()
+        sent_postgame += sent
+        errors_postgame.extend(errors)
 
     return JsonResponse(
         {
             "ok": True,
+            "type": notify_type,
             "sent_pregame": sent_pregame,
             "sent_postgame": sent_postgame,
             "errors_pregame": errors_pregame,
             "errors_postgame": errors_postgame,
         }
     )
+
+
+def _send_pregame(now, window_only: bool):
+    sent = 0
+    errors = []
+
+    if window_only:
+        # cron: отправляем, если до матча осталось не более 24 часов
+        window_start = now + timedelta(hours=24)
+        candidates = Match.objects.filter(
+            status=Match.STATUS_ANNOUNCED,
+            pregame_notification_sent=False,
+        )
+    else:
+        # ручной режим: отправляем ближайший анонсированный матч
+        match = Match.next_upcoming()
+        candidates = [match] if match and not match.pregame_notification_sent else []
+
+    for match in candidates:
+        match_start = timezone.make_aware(
+            timezone.datetime.combine(match.played_on, match.starts_at)
+        )
+        if not window_only or (now <= match_start <= window_start):
+            try:
+                if send_pregame_notification(match):
+                    sent += 1
+            except Exception as exc:
+                errors.append(f"{match.pk}: {exc}")
+    return sent, errors
+
+
+def _send_postgame():
+    sent = 0
+    errors = []
+    match = (
+        Match.objects.filter(
+            status=Match.STATUS_PLAYED,
+            postgame_notification_sent=False,
+        )
+        .order_by("-played_on", "-id")
+        .first()
+    )
+    if match:
+        try:
+            if send_postgame_notification(match):
+                sent += 1
+        except Exception as exc:
+            errors.append(f"{match.pk}: {exc}")
+    return sent, errors

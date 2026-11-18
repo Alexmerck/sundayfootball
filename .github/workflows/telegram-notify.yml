@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Call notify endpoint
         run: |
-          curl -sS "https://sundayfootball.onrender.com/tg/notify/?token=${{ secrets.TELEGRAM_NOTIFY_TOKEN }}"
+          curl -sS "https://sundayfootball.onrender.com/tg/notify/?token=${{ secrets.TELEGRAM_NOTIFY_TOKEN }}&type=all"
