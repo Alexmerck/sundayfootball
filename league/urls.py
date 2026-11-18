@@ -10,5 +10,6 @@ urlpatterns = [
     path("matches/new/", views.match_create, name="match-create"),
     path("matches/<int:pk>/balance/", views.match_balance, name="match-balance"),
     path("matches/<int:pk>/", views.match_detail, name="match-detail"),
+    path("tg/notify/", views.telegram_notify, name="telegram-notify"),
     path("players/<int:pk>/", views.player_detail, name="player-detail"),
 ]

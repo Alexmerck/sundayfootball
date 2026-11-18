@@ -1,5 +1,9 @@
+from datetime import timedelta
+
+from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count, Q, Sum
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
@@ -7,6 +11,7 @@ from django.views.decorators.http import require_http_methods
 from .forms import MatchMetaForm, player_line_forms
 from .models import Appearance, Match, Player
 from .services import balance_appearances
+from .telegram import send_pregame_notification, send_postgame_notification
 
 
 def _leaderboard():
@@ -183,4 +188,52 @@ def match_balance(request, pk):
         request,
         "league/match_balance.html",
         {"match": match, "balanced": balanced},
+    )
+
+
+@require_http_methods(["GET", "POST"])
+def telegram_notify(request):
+    token = request.GET.get("token") or request.POST.get("token")
+    if token != getattr(settings, "TELEGRAM_NOTIFY_TOKEN", None):
+        return JsonResponse({"ok": False, "error": "unauthorized"}, status=403)
+
+    now = timezone.localtime()
+    sent_pregame, errors_pregame = 0, []
+    sent_postgame, errors_postgame = 0, []
+
+    # Pregame
+    window_start = now + timedelta(hours=24)
+    for match in Match.objects.filter(
+        status=Match.STATUS_ANNOUNCED,
+        pregame_notification_sent=False,
+    ).prefetch_related("appearances__player"):
+        match_start = timezone.make_aware(
+            timezone.datetime.combine(match.played_on, match.starts_at)
+        )
+        if now <= match_start <= window_start:
+            try:
+                if send_pregame_notification(match):
+                    sent_pregame += 1
+            except Exception as exc:
+                errors_pregame.append(f"{match.pk}: {exc}")
+
+    # Postgame
+    for match in Match.objects.filter(
+        status=Match.STATUS_PLAYED,
+        postgame_notification_sent=False,
+    ).prefetch_related("appearances__player"):
+        try:
+            if send_postgame_notification(match):
+                sent_postgame += 1
+        except Exception as exc:
+            errors_postgame.append(f"{match.pk}: {exc}")
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "sent_pregame": sent_pregame,
+            "sent_postgame": sent_postgame,
+            "errors_pregame": errors_pregame,
+            "errors_postgame": errors_postgame,
+        }
     )

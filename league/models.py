@@ -8,6 +8,12 @@ from django.utils import timezone
 
 class Player(models.Model):
     name = models.CharField("Имя", max_length=80)
+    telegram = models.CharField(
+        "Telegram",
+        max_length=80,
+        blank=True,
+        help_text="Ник без @, например: ivanov",
+    )
     avatar = models.ImageField("Аватар", upload_to="avatars/%Y/", blank=True)
     is_active = models.BooleanField("В составе", default=True)
 
@@ -21,6 +27,15 @@ class Player(models.Model):
 
     def get_absolute_url(self):
         return reverse("player-detail", args=[self.pk])
+
+    def clean(self):
+        super().clean()
+        if self.telegram:
+            self.telegram = self.telegram.lstrip("@").strip().lower()
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     @property
     def initials(self) -> str:
@@ -47,6 +62,12 @@ class Player(models.Model):
         )
         totals["win_rate"] = round((totals["wins"] / games) * 100) if games else None
         return totals
+
+    @property
+    def telegram_mention(self) -> str:
+        if self.telegram:
+            return f"@{self.telegram}"
+        return self.name
 
 
 class Match(models.Model):
@@ -81,6 +102,12 @@ class Match(models.Model):
     team_a_name = models.CharField("Команда А", max_length=40, default="Белые")
     team_b_name = models.CharField("Команда Б", max_length=40, default="Цветные")
     notes = models.CharField("Заметка", max_length=200, blank=True)
+    pregame_notification_sent = models.BooleanField(
+        "Напоминание отправлено", default=False
+    )
+    postgame_notification_sent = models.BooleanField(
+        "Результат отправлен", default=False
+    )
 
     class Meta:
         verbose_name = "Матч"

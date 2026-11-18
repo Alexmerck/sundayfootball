@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 
 import dj_database_url
+import os
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -134,3 +135,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_URL = '/admin/login/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Telegram bot settings
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+TELEGRAM_NOTIFY_TOKEN = os.getenv("TELEGRAM_NOTIFY_TOKEN", "")

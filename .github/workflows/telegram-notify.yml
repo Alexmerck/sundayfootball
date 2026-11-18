@@ -1,0 +1,14 @@
+name: Telegram notify
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # каждые 15 минут
+  workflow_dispatch:  # ручной запуск
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call notify endpoint
+        run: |
+          curl -sS "https://www.sunday-football.ru/tg/notify/?token=${{ secrets.TELEGRAM_NOTIFY_TOKEN }}"
